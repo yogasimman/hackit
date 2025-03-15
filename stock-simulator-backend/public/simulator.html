@@ -14,103 +14,200 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- Custom CSS -->
   <style>
+    /* Base Styles */
     body {
       font-family: 'Montserrat', sans-serif;
-      background-color: #f5f7fa;
       margin: 0;
       padding: 0;
+      background-color: #0a0a0a; /* Dark background */
+      color: #e0e0e0; /* Light text */
+      overflow-x: hidden; /* Prevent horizontal overflow */
     }
-    /* Top Navbar */
+
+    /* Navbar */
     .navbar {
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
       position: fixed;
-      width: 100%;
-      z-index: 1100;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background-color: #111; /* Dark navbar */
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
     }
-    .navbar .navbar-brand {
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
+
+    .navbar-brand {
+      font-size: 24px;
+      font-weight: bold;
+      color: #41cc45; /* Slightly toned-down green */
+      transition: color 0.3s ease;
     }
-    .navbar .navbar-right {
+
+    .navbar-brand:hover {
+      color: #66ff66; /* Brighter green on hover */
+    }
+
+    .navbar-right {
       margin-left: auto;
       display: flex;
       align-items: center;
+      gap: 15px;
     }
-    /* Sidebar */
-    .sidebar {
-      position: fixed;
-      top: 56px;
-      left: 0;
-      bottom: 0;
-      width: 80px;
-      background-color: #ffffff;
-      border-right: 1px solid #ddd;
-      padding-top: 20px;
-      z-index: 1050;
-      transition: width 0.3s;
-      overflow: hidden;
+
+    .navbar-right .nav-link {
+      color: #41cc45; /* Slightly toned-down green */
+      text-decoration: none;
+      font-size: 1rem;
+      padding: 8px 12px;
+      border-radius: 4px;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
-    .sidebar:hover {
-      width: 200px;
+
+    .navbar-right .nav-link:hover {
+      background-color: rgba(76, 175, 80, 0.1); /* Green with transparency */
     }
-    .sidebar ul {
-      list-style: none;
-      padding: 0;
-    }
-    .sidebar .nav-link {
-      color: #555;
-      padding: 15px;
-      display: flex;
-      align-items: center;
-      white-space: nowrap;
-      transition: background-color 0.3s, color 0.3s;
-    }
-    .sidebar .nav-link i {
-      min-width: 30px;
-      font-size: 1.5rem;
-      text-align: center;
-    }
-    .sidebar .nav-link span {
-      opacity: 0;
-      margin-left: 10px;
-      transition: opacity 0.3s;
-    }
-    .sidebar:hover .nav-link span {
-      opacity: 1;
-    }
-    .sidebar .nav-link:hover {
-      background-color: #f0f0f0;
-      color: #000;
-    }
+
     /* Main Content */
     .main-content {
-      margin-left: 80px;
-      padding-top: 56px;
-      transition: margin-left 0.3s;
+      margin-top: 80px; /* Adjusted for navbar height */
+      padding: 20px;
+      max-width: 100%; /* Prevent overflow */
+      overflow-x: hidden; /* Hide horizontal overflow */
     }
-    .sidebar:hover ~ .main-content {
-      margin-left: 200px;
-    }
+
+    /* Simulator Controls */
     .section-header {
       margin: 20px 0;
+      color: #41cc45; /* Slightly toned-down green */
     }
-    .stock-table th, .stock-table td {
-      vertical-align: middle;
-    }
+
     .controls {
       margin: 20px 0;
     }
+
+    .controls .form-control {
+      background-color: #1a1a1a; /* Dark input background */
+      border: 1px solid #333;
+      color: #e0e0e0; /* Light text */
+      transition: border-color 0.3s ease;
+    }
+
+    .controls .form-control:focus {
+      border-color: #41cc45; /* Green border on focus */
+      box-shadow: 0 0 5px rgba(76, 175, 80, 0.5); /* Green glow */
+    }
+
+    .controls .btn {
+      transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .controls .btn-success {
+      background-color: #41cc45; /* Slightly toned-down green */
+      border: none;
+    }
+
+    .controls .btn-success:hover {
+      background-color: #66ff66; /* Brighter green on hover */
+      transform: translateY(-2px);
+    }
+
+    .controls .btn-warning {
+      background-color: #ffc107; /* Yellow */
+      border: none;
+    }
+
+    .controls .btn-warning:hover {
+      background-color: #ff9800; /* Darker yellow */
+      transform: translateY(-2px);
+    }
+
+    .controls .btn-info {
+      background-color: #17a2b8; /* Blue */
+      border: none;
+    }
+
+    .controls .btn-info:hover {
+      background-color: #138496; /* Darker blue */
+      transform: translateY(-2px);
+    }
+
+    .controls .btn-danger {
+      background-color: #dc3545; /* Red */
+      border: none;
+    }
+
+    .controls .btn-danger:hover {
+      background-color: #c82333; /* Darker red */
+      transform: translateY(-2px);
+    }
+
+    /* Stock Table */
+    .stock-table {
+      background-color: #111; /* Dark table background */
+      color: #e0e0e0; /* Light text */
+      border-radius: 8px;
+      overflow: hidden;
+      width: 100%; /* Ensure table fits within the screen */
+    }
+
+    .stock-table th,
+    .stock-table td {
+      padding: 12px;
+      border-bottom: 1px solid #333;
+    }
+
+    .stock-table th {
+      background-color: #1a1a1a; /* Dark header background */
+      color: #41cc45; /* Slightly toned-down green */
+    }
+
+    .stock-table tr:hover {
+      background-color: rgba(76, 175, 80, 0.1); /* Green with transparency */
+    }
+
+    .stock-table .buy-btn {
+      background-color: #41cc45; /* Slightly toned-down green */
+      border: none;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .stock-table .buy-btn:hover {
+      background-color: #66ff66; /* Brighter green on hover */
+      transform: translateY(-2px);
+    }
+
+    /* Chart Container */
     .chart-container {
       width: 100%;
       height: 400px;
       margin-top: 20px;
+      background-color: #111; /* Dark chart background */
+      border-radius: 8px;
+      padding: 20px;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+      .main-content {
+        margin-top: 60px;
+      }
+
+      .row {
+        flex-direction: column;
+      }
+
+      .col-md-4 {
+        margin-bottom: 15px;
+      }
     }
   </style>
 </head>
 <body>
   <!-- Top Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-success fixed-top">
+  <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
     <div class="container-fluid">
       <a class="navbar-brand" href="#">InvestIQ</a>
       <div class="navbar-right" id="navbar-right-content">
@@ -119,18 +216,6 @@
       </div>
     </div>
   </nav>
-
-  <!-- Sidebar -->
-  <div class="sidebar bg-light">
-    <ul class="nav flex-column">
-      <li class="nav-item">
-        <a class="nav-link" href="index.html" title="Dashboard">
-          <i class="bi bi-speedometer2"></i><span>Dashboard</span>
-        </a>
-      </li>
-      <!-- Add more sidebar items as needed -->
-    </ul>
-  </div>
 
   <!-- Main Content -->
   <div class="main-content container-fluid">

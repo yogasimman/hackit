@@ -12,53 +12,126 @@
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
   <!-- Custom CSS -->
   <style>
+    /* Base Styles */
     body {
       font-family: 'Montserrat', sans-serif;
       margin: 0;
       padding: 0;
-      background-color: #f5f7fa;
+      background-color: #0a0a0a; /* Dark background */
+      color: #e0e0e0; /* Light text */
     }
 
-    /* Top Navbar */
+    /* Navbar */
     .navbar {
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      background-color: #28a745 !important;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background-color: #111; /* Dark navbar */
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
     }
 
-    /* Sidebar styling */
+    .navbar-brand {
+      font-size: 24px;
+      font-weight: bold;
+      color: #41cc45; /* Slightly toned-down green */
+      transition: color 0.3s ease;
+    }
+
+    .navbar-brand:hover {
+      color: #66ff66; /* Brighter green on hover */
+    }
+
+    .navbar-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .navbar-right .nav-link {
+      color: #41cc45; /* Slightly toned-down green */
+      text-decoration: none;
+      font-size: 1rem;
+      padding: 8px 12px;
+      border-radius: 4px;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .navbar-right .nav-link:hover {
+      background-color: rgba(76, 175, 80, 0.1); /* Green with transparency */
+    }
+
+    /* Sidebar */
     .sidebar {
       position: fixed;
-      top: 56px; /* Height of the navbar */
+      top: 60px;
       left: 0;
       bottom: 0;
       width: 80px;
-      background-color: #ffffff;
-      border-right: 1px solid #ddd;
+      background-color: #111; /* Dark sidebar */
+      border-right: 1px solid #333;
       padding-top: 20px;
       z-index: 1050;
+      transition: width 0.3s ease;
+      overflow: hidden;
+    }
+
+    .sidebar:hover {
+      width: 220px; /* Slightly wider on hover */
+    }
+
+    .sidebar ul {
+      padding: 0;
+      margin: 0;
+      list-style: none;
     }
 
     .sidebar .nav-link {
-      color: #555;
+      color: #e0e0e0; /* Light text */
       padding: 15px;
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .sidebar .nav-link i {
+      min-width: 30px;
+      font-size: 1.5rem;
       text-align: center;
+      color: #41cc45; /* Slightly toned-down green */
+    }
+
+    .sidebar .nav-link span {
+      opacity: 0;
+      margin-left: 10px;
+      transition: opacity 0.3s ease;
+    }
+
+    .sidebar:hover .nav-link span {
+      opacity: 1;
     }
 
     .sidebar .nav-link:hover {
-      background-color: #f0f0f0;
-      color: #000;
-      transition: background-color 0.3s, color 0.3s;
+      background-color: rgba(76, 175, 80, 0.1); /* Green with transparency */
+      color: #41cc45; /* Slightly toned-down green */
     }
 
     /* Main Content */
     .main-content {
       margin-left: 80px;
-      padding-top: 56px;
-      transition: margin-left 0.3s;
+      padding-top: 80px; /* Adjusted for navbar height */
+      transition: margin-left 0.3s ease;
     }
 
-    .sidebar:hover + .main-content {
-      margin-left: 180px;
+    .sidebar:hover ~ .main-content {
+      margin-left: 220px; /* Adjusted for wider sidebar */
     }
 
     /* Assessment Content */
@@ -66,12 +139,30 @@
       padding: 20px;
     }
 
+    .assessment-content h2 {
+      color: #41cc45; /* Slightly toned-down green */
+      margin-bottom: 40px;
+      font-size: 2rem;
+      font-weight: bold;
+    }
+
     .question {
       margin-bottom: 20px;
+      background-color: #111; /* Dark question background */
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(76, 175, 80, 0.2); /* Green shadow */
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .question:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3); /* Brighter green shadow */
     }
 
     .question h4 {
-      color: #28a745;
+      color: #41cc45; /* Slightly toned-down green */
+      margin-bottom: 20px;
     }
 
     .options {
@@ -81,6 +172,54 @@
     .options label {
       display: block;
       margin-bottom: 10px;
+      color: #e0e0e0; /* Light text */
+    }
+
+    .options input[type="radio"] {
+      margin-right: 10px;
+    }
+
+    /* Submit Button */
+    #submit-assessment {
+      background-color: #41cc45; /* Slightly toned-down green */
+      border: none;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    #submit-assessment:hover {
+      background-color: #66ff66; /* Brighter green on hover */
+      transform: translateY(-2px);
+    }
+
+    /* Result Message */
+    #result {
+      margin-top: 20px;
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+
+    #result.correct {
+      color: #41cc45; /* Green for correct answers */
+    }
+
+    #result.incorrect {
+      color: #dc3545; /* Red for incorrect answers */
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 60px;
+      }
+      .sidebar:hover {
+        width: 60px;
+      }
+      .main-content {
+        margin-left: 60px;
+      }
+      .sidebar:hover ~ .main-content {
+        margin-left: 60px;
+      }
     }
   </style>
 </head>
@@ -89,42 +228,38 @@
   <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
     <div class="container-fluid">
       <a class="navbar-brand" href="index.html">InvestIQ</a>
-      <div class="d-flex">
-        <a class="nav-link text-white" href="#"><i class="bi bi-person-circle"></i> Login</a>
-      </div>
     </div>
   </nav>
-
-  <!-- Sidebar -->
-  <div class="sidebar bg-light">
-    <ul class="nav flex-column">
-      <li class="nav-item">
-        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Dashboard">
-          <i class="bi bi-speedometer2"></i>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Portfolio">
-          <i class="bi bi-bar-chart-line"></i>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Transactions">
-          <i class="bi bi-currency-exchange"></i>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Analytics">
-          <i class="bi bi-graph-up"></i>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Settings">
-          <i class="bi bi-gear"></i>
-        </a>
-      </li>
-    </ul>
-  </div>
+<!-- Sidebar -->
+<div class="sidebar bg-dark">
+  <ul class="nav flex-column">
+    <li class="nav-item">
+      <a class="nav-link" href="analysis.html" title="Analysis">
+        <i class="bi bi-graph-up-arrow"></i><span> Analytics</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="simulator.html" title="Simulator">
+        <i class="bi bi-bar-chart-line"></i><span> Simulator</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="progress.html" title="Learning Hub">
+        <i class="bi bi-mortarboard"></i><span> Learning Hub</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="market.html" title="Market Mood">
+        <i class="bi bi-emoji-neutral"></i><span> Market Mood</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="candle.html" title="Candle Chart">
+        <i class="bi bi-bar-chart"></i><span> Candle Chart</span>
+      </a>
+    </li>
+  </ul>
+</div>
 
   <!-- Main Content -->
   <div class="main-content">
@@ -156,29 +291,6 @@
         alert('Failed to load questions. Please try again later.');
       }
     }
-    async function updateProgress(userId, levelId) {
-  try {
-    const response = await fetch('/api/update-progress', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ userId, levelId })
-    });
-
-    const data = await response.json();
-
-    if (data.success) {
-      console.log("Progress updated successfully!");
-      // Redirect to progress page
-      window.location.href = "progress.html";
-    } else {
-      console.error("Failed to update progress:", data.error);
-    }
-  } catch (error) {
-    console.error("Error updating progress:", error);
-  }
-}
 
     // Render MCQs
     function renderQuestions() {
@@ -212,9 +324,33 @@
         .join('');
     }
 
+    // Update user progress and redirect to progress.html
+    async function updateProgress(userId, levelId) {
+      try {
+        const response = await fetch('/api/update-progress', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, levelId }),
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          window.location.href = 'progress.html'; // Redirect to progress page
+        } else {
+          console.error('Failed to update progress:', data.error);
+        }
+      } catch (error) {
+        console.error('Error updating progress:', error);
+      }
+    }
+
     // Submit assessment
     document.getElementById('submit-assessment').addEventListener('click', async () => {
       const userId = 1; // Replace with the actual user ID (e.g., from session or login)
+      const levelId = new URLSearchParams(window.location.search).get('level');
+      console.log('User ID:', userId); // Debugging
+      console.log('Level ID:', levelId); // Debugging
+
       const responses = questions.map((q) => {
         const selectedOption = document.querySelector(`input[name="question-${q.id}"]:checked`)?.value;
         return {
@@ -233,22 +369,21 @@
 
         if (success) {
           if (allCorrect) {
-  resultElement.textContent = "All answers are correct! You have unlocked the next level.";
-  resultElement.style.color = "green";
+            resultElement.textContent = "All answers are correct! You have unlocked the next level.";
+            resultElement.className = "correct";
 
-  // Add "Continue" button
-  const continueButton = document.createElement("button");
-  continueButton.textContent = "Continue";
-  continueButton.classList.add("btn", "btn-primary", "mt-3");
-
-  // Call updateProgress and redirect
-  continueButton.onclick = () => updateProgress(userId, levelId);
-
-  resultElement.appendChild(continueButton);
-}
-else {
+            // Add "Continue" button
+            const continueButton = document.createElement('button');
+            continueButton.textContent = 'Continue';
+            continueButton.classList.add('btn', 'btn-success', 'mt-3');
+            continueButton.addEventListener('click', () => {
+              console.log('Continue button clicked'); // Debugging
+              updateProgress(userId, levelId);
+            });
+            resultElement.appendChild(continueButton);
+          } else {
             resultElement.textContent = "Some answers are incorrect. Please try again.";
-            resultElement.style.color = "red";
+            resultElement.className = "incorrect";
           }
         } else {
           throw new Error('Failed to submit responses');

@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+
   <!-- Custom CSS -->
   <style>
     /* Base Styles */
@@ -17,120 +19,237 @@
       font-family: 'Montserrat', sans-serif;
       margin: 0;
       padding: 0;
-      background-color: #f5f7fa;
+      background-color: #0a0a0a; /* Dark background */
+      color: #e0e0e0; /* Light text */
+      line-height: 1.6;
     }
-    /* Top Navbar */
+
+    /* Navbar */
     .navbar {
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      position: relative;
-      height:60px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background-color: #111; /* Dark navbar */
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
     }
-    .navbar .navbar-brand {
-        font-size: 30px;
-        font-weight: bold;
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
+
+    .navbar-brand {
+      font-size: 24px;
+      font-weight: bold;
+      color: #41cc45; /* Slightly toned-down green */
+      transition: color 0.3s ease;
     }
-    .navbar .navbar-right {
+
+    .navbar-brand:hover {
+      color: #66ff66; /* Brighter green on hover */
+    }
+
+    .navbar-right {
       margin-left: auto;
       display: flex;
       align-items: center;
+      gap: 15px;
     }
-    .navbar .navbar-right .nav-link, 
-    .navbar .navbar-right button {
-      color: #fff;
+
+    .navbar-right .nav-link,
+    .navbar-right button {
+      color: #41cc45; /* Slightly toned-down green */
       text-decoration: none;
       font-size: 1rem;
+      padding: 8px 12px;
+      border-radius: 4px;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
-    /* Sidebar styling */
+
+    .navbar-right .nav-link:hover,
+    .navbar-right button:hover {
+      background-color: rgba(76, 175, 80, 0.1); /* Green with transparency */
+    }
+
+    /* Sidebar */
     .sidebar {
       position: fixed;
-      top: 62px; /* Height of the navbar */
+      top: 60px;
       left: 0;
       bottom: 0;
       width: 80px;
-      background-color: #ffffff;
-      border-right: 1px solid #ddd;
+      background-color: #111; /* Dark sidebar */
+      border-right: 1px solid #333;
       padding-top: 20px;
       z-index: 1050;
-      transition: width 0.3s;
+      transition: width 0.3s ease;
       overflow: hidden;
     }
+
     .sidebar:hover {
-      width: 200px;
+      width: 220px; /* Slightly wider on hover */
     }
+
     .sidebar ul {
       padding: 0;
       margin: 0;
       list-style: none;
     }
+
     .sidebar .nav-link {
-      color: #555;
+      color: #e0e0e0; /* Light text */
       padding: 15px;
       display: flex;
       align-items: center;
       white-space: nowrap;
-      transition: background-color 0.3s, color 0.3s;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
+
     .sidebar .nav-link i {
       min-width: 30px;
       font-size: 1.5rem;
       text-align: center;
+      color: #41cc45; /* Slightly toned-down green */
     }
+
     .sidebar .nav-link span {
       opacity: 0;
       margin-left: 10px;
-      transition: opacity 0.3s;
+      transition: opacity 0.3s ease;
     }
+
     .sidebar:hover .nav-link span {
       opacity: 1;
     }
+
     .sidebar .nav-link:hover {
-      background-color: #f0f0f0;
-      color: #000;
+      background-color: rgba(76, 175, 80, 0.1); /* Green with transparency */
+      color: #41cc45; /* Slightly toned-down green */
     }
+
     /* Main Content */
     .main-content {
-      margin-left: 80px; /* Same as sidebar initial width */
-      padding-top: 56px; /* Height of the navbar */
-      transition: margin-left 0.3s;
+      margin-left: 80px;
+      padding-top: 80px; /* Adjusted for navbar height */
+      transition: margin-left 0.3s ease;
     }
+
     .sidebar:hover ~ .main-content {
-      margin-left: 200px;
+      margin-left: 220px; /* Adjusted for wider sidebar */
     }
+
     /* Hero Section */
     .hero {
       position: relative;
       height: 100vh;
       background: url('https://images.unsplash.com/photo-1554224154-22dec7ec8818?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') no-repeat center center/cover;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
     }
+
     .hero-overlay {
       position: absolute;
       top: 0;
       left: 0;
       height: 100%;
       width: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
+      background-color: rgba(0, 0, 0, 0.7); /* Dark overlay */
     }
+
     .hero-content {
       position: relative;
       z-index: 2;
+      color: #fff;
     }
-    /* Features Cards */
+
+    .hero-content h1 {
+      font-size: 3.5rem;
+      margin-bottom: 20px;
+      animation: fadeInDown 1s ease;
+      color: #41cc45; /* Slightly toned-down green */
+    }
+
+    .hero-content p {
+      font-size: 1.25rem;
+      margin-bottom: 30px;
+      animation: fadeInUp 1s ease;
+    }
+
+    .hero-content .btn {
+      background-color: #41cc45; /* Slightly toned-down green */
+      color: #000; /* Black text */
+      padding: 12px 24px;
+      border-radius: 4px;
+      text-decoration: none;
+      font-size: 1rem;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .hero-content .btn:hover {
+      background-color: #66ff66; /* Brighter green on hover */
+      transform: translateY(-3px);
+    }
+
+    /* Features Section */
     .feature-card {
       border: none;
-      transition: transform 0.3s, box-shadow 0.3s;
+      background-color: #111; /* Dark cards */
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
       margin-bottom: 30px;
     }
+
     .feature-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+      transform: translateY(-10px);
+      box-shadow: 0 15px 30px rgba(76, 175, 80, 0.2); /* Green shadow */
     }
+
     .feature-card i {
       font-size: 3rem;
+      color:#41cc45; /* Slightly toned-down green */
+      margin-bottom: 15px;
     }
-    /* Responsive adjustments */
+
+    .feature-card h5 {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+      color: #41cc45; /* Slightly toned-down green */
+    }
+
+    .feature-card p {
+      font-size: 1rem;
+      color: #e0e0e0; /* Light text */
+    }
+
+    /* Animations */
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Responsive Adjustments */
     @media (max-width: 768px) {
       .sidebar {
         width: 60px;
@@ -144,12 +263,20 @@
       .sidebar:hover ~ .main-content {
         margin-left: 60px;
       }
+
+      .hero-content h1 {
+        font-size: 2.5rem;
+      }
+
+      .hero-content p {
+        font-size: 1rem;
+      }
     }
   </style>
 </head>
 <body>
   <!-- Top Navigation Bar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-success fixed-top">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
     <div class="container-fluid">
       <!-- Centered Website Name -->
       <a class="navbar-brand" href="#">InvestIQ</a>
@@ -160,37 +287,36 @@
       </div>
     </div>
   </nav>
-
-  <!-- Sidebar -->
-  <div class="sidebar bg-light">
-    <ul class="nav flex-column">
-      <li class="nav-item">
-        <a class="nav-link" href="dashboard.html" title="Dashboard">
-          <i class="bi bi-speedometer2"></i><span>Dashboard</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="simulator.html" title="Simulator">
-          <i class="bi bi-bar-chart-line"></i><span>Simulator</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="profile.html" title="Profile">
-          <i class="bi bi-currency-exchange"></i><span>Profile</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#" title="Analytics">
-          <i class="bi bi-graph-up"></i><span>Analytics</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#" title="Settings">
-          <i class="bi bi-gear"></i><span>Settings</span>
-        </a>
-      </li>
-    </ul>
-  </div>
+<!-- Sidebar -->
+<div class="sidebar bg-dark">
+  <ul class="nav flex-column">
+    <li class="nav-item">
+      <a class="nav-link" href="analysis.html" title="Analysis">
+        <i class="bi bi-graph-up-arrow"></i><span> Analytics</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="simulator.html" title="Simulator">
+        <i class="bi bi-bar-chart-line"></i><span> Simulator</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="progress.html" title="Learning Hub">
+        <i class="bi bi-mortarboard"></i><span> Learning Hub</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="market.html" title="Market Mood">
+        <i class="bi bi-emoji-neutral"></i><span> Market Mood</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="candle.html" title="Candle Chart">
+        <i class="bi bi-bar-chart"></i><span> Candle Chart</span>
+      </a>
+    </li>
+  </ul>
+</div>
 
   <!-- Main Content -->
   <div class="main-content">
@@ -200,7 +326,7 @@
       <div class="hero-content text-white">
         <h1 class="display-4 fw-bold">InvestIQ</h1>
         <p class="lead">Empowering your investment decisions with real-time insights.</p>
-        <a href="#features" class="btn btn-lg btn-light mt-4">Explore Features</a>
+        <a href="#features" class="btn btn-lg  mt-4">Explore Features</a>
       </div>
     </section>
 
@@ -236,8 +362,6 @@
         </div>
       </div>
     </section>
-
-    <!-- Additional content can go here -->
   </div>
 
   <!-- Bootstrap JS Bundle (includes Popper) -->

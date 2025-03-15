@@ -65,7 +65,7 @@ const updatePortfolioPrices = async () => {
   for (let stock of simulationState.portfolio) {
     const symbol = stock.symbol;
     try {
-      const response = await fetch(`http://localhost:5000/api/getStockData?symbol=${symbol}&date=${simulationState.currentDate}`);
+      const response = await fetch(`http://localhost:5000/api/getStockData?stock=${symbol}&date=${simulationState.currentDate}`);
       const data = await response.json();
       if (data.Close) {
         stock.currentPrice = parseFloat(data.Close);
@@ -102,7 +102,7 @@ app.post('/api/getStocksByDate', async (req, res) => {
 app.post('/api/buyStock', async (req, res) => {
   const { symbol, quantity, date } = req.body;
   try {
-    const response = await fetch(`http://localhost:5000/api/getStockData?symbol=${symbol}&date=${date}`);
+    const response = await fetch(`http://localhost:5000/api/getStockData?stock=${symbol}&date=${date}`);
     const data = await response.json();
     if (!data.Close) {
       return res.status(400).json({ error: 'No data for this stock on that date' });
@@ -181,7 +181,40 @@ app.get('/api/simulatorStatus', (req, res) => {
 });
 
 // ----------------------
-// Authentication Endpoints (unchanged)
+// Investment Rollercoaster Analysis Endpoints
+// ----------------------
+
+// Proxy endpoint for the rollercoaster analysis.
+// We fix any "NaN" values by replacing them with "null" in the raw response.
+app.get('/api/rollercoaster', async (req, res) => {
+  try {
+    const queryParams = new URLSearchParams(req.query).toString();
+    const response = await fetch(`http://localhost:5000/api/rollercoaster?${queryParams}`);
+    const rawText = await response.text();
+    // Replace all occurrences of "NaN" with "null" to make valid JSON.
+    const fixedText = rawText.replace(/\bNaN\b/g, "null");
+    const data = JSON.parse(fixedText);
+    res.json(data);
+  } catch (err) {
+    console.error('Error fetching rollercoaster data:', err);
+    res.status(500).json({ error: 'Failed to fetch rollercoaster data' });
+  }
+});
+
+// Endpoint to get all stock symbols.
+app.get('/api/getAllStocks', async (req, res) => {
+  try {
+    const response = await fetch('http://localhost:5000/api/getAllStocks');
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    console.error('Error fetching all stocks:', err);
+    res.status(500).json({ error: 'Failed to fetch stocks' });
+  }
+});
+
+// ----------------------
+// Authentication Endpoints
 // ----------------------
 app.post('/api/register', async (req, res) => {
   const { name, email, password } = req.body;
@@ -240,8 +273,8 @@ app.post('/api/logout', (req, res) => {
 
 // ----------------------
 // Additional Endpoints (Progress, Modules, Questions, Responses)
+// (Existing endpoints remain unchanged.)
 // ----------------------
-// (Existing endpoints for progress, modules, questions, and responses remain unchanged.)
 app.get('/api/progress/:userId', async (req, res) => {
   const { userId } = req.params;
   try {
@@ -318,6 +351,25 @@ app.post('/api/responses', async (req, res) => {
       await pool.query('UPDATE user_xp SET total_xp = total_xp + 100 WHERE user_id = $1', [userId]);
     }
     res.json({ success: true, allCorrect });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/update-progress', async (req, res) => {
+  const { userId, levelId } = req.body;
+  try {
+    await pool.query(
+      'UPDATE user_progress SET completed = TRUE, current = FALSE WHERE user_id = $1 AND level_id = $2',
+      [userId, levelId]
+    );
+    const nextLevelId = parseInt(levelId) + 1;
+    await pool.query(
+      'INSERT INTO user_progress (user_id, level_id, current) VALUES ($1, $2, TRUE) ON CONFLICT (user_id, level_id) DO UPDATE SET current = TRUE',
+      [userId, nextLevelId]
+    );
+    res.json({ success: true });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Internal server error' });

@@ -12,53 +12,126 @@
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
   <!-- Custom CSS -->
   <style>
+    /* Base Styles */
     body {
       font-family: 'Montserrat', sans-serif;
       margin: 0;
       padding: 0;
-      background-color: #f5f7fa;
+      background-color: #0a0a0a; /* Dark background */
+      color: #e0e0e0; /* Light text */
     }
 
-    /* Top Navbar */
+    /* Navbar */
     .navbar {
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      background-color: #28a745 !important;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background-color: #111; /* Dark navbar */
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
     }
 
-    /* Sidebar styling */
+    .navbar-brand {
+      font-size: 24px;
+      font-weight: bold;
+      color: #41cc45; /* Slightly toned-down green */
+      transition: color 0.3s ease;
+    }
+
+    .navbar-brand:hover {
+      color: #66ff66; /* Brighter green on hover */
+    }
+
+    .navbar-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .navbar-right .nav-link {
+      color: #41cc45; /* Slightly toned-down green */
+      text-decoration: none;
+      font-size: 1rem;
+      padding: 8px 12px;
+      border-radius: 4px;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .navbar-right .nav-link:hover {
+      background-color: rgba(76, 175, 80, 0.1); /* Green with transparency */
+    }
+
+    /* Sidebar */
     .sidebar {
       position: fixed;
-      top: 56px; /* Height of the navbar */
+      top: 60px;
       left: 0;
       bottom: 0;
       width: 80px;
-      background-color: #ffffff;
-      border-right: 1px solid #ddd;
+      background-color: #111; /* Dark sidebar */
+      border-right: 1px solid #333;
       padding-top: 20px;
       z-index: 1050;
+      transition: width 0.3s ease;
+      overflow: hidden;
+    }
+
+    .sidebar:hover {
+      width: 220px; /* Slightly wider on hover */
+    }
+
+    .sidebar ul {
+      padding: 0;
+      margin: 0;
+      list-style: none;
     }
 
     .sidebar .nav-link {
-      color: #555;
+      color: #e0e0e0; /* Light text */
       padding: 15px;
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .sidebar .nav-link i {
+      min-width: 30px;
+      font-size: 1.5rem;
       text-align: center;
+      color: #41cc45; /* Slightly toned-down green */
+    }
+
+    .sidebar .nav-link span {
+      opacity: 0;
+      margin-left: 10px;
+      transition: opacity 0.3s ease;
+    }
+
+    .sidebar:hover .nav-link span {
+      opacity: 1;
     }
 
     .sidebar .nav-link:hover {
-      background-color: #f0f0f0;
-      color: #000;
-      transition: background-color 0.3s, color 0.3s;
+      background-color: rgba(76, 175, 80, 0.1); /* Green with transparency */
+      color: #41cc45; /* Slightly toned-down green */
     }
 
     /* Main Content */
     .main-content {
       margin-left: 80px;
-      padding-top: 56px;
-      transition: margin-left 0.3s;
+      padding-top: 80px; /* Adjusted for navbar height */
+      transition: margin-left 0.3s ease;
     }
 
-    .sidebar:hover + .main-content {
-      margin-left: 180px;
+    .sidebar:hover ~ .main-content {
+      margin-left: 220px; /* Adjusted for wider sidebar */
     }
 
     /* Learning Content */
@@ -66,18 +139,91 @@
       padding: 20px;
     }
 
+    .learning-content h2 {
+      color: #41cc45; /* Slightly toned-down green */
+      margin-bottom: 40px;
+      font-size: 2rem;
+      font-weight: bold;
+    }
+
     .module {
       margin-bottom: 40px;
+      background-color: #111; /* Dark module background */
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(76, 175, 80, 0.2); /* Green shadow */
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .module:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3); /* Brighter green shadow */
     }
 
     .module h4 {
-      color: #28a745;
+      color: #41cc45; /* Slightly toned-down green */
+      margin-bottom: 20px;
     }
 
+    .module p {
+      color: #e0e0e0; /* Light text */
+    }
+
+    /* Navigation Buttons */
     .navigation-buttons {
       display: flex;
       justify-content: space-between;
       margin-top: 20px;
+    }
+
+    .navigation-buttons .btn {
+      transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .navigation-buttons .btn-secondary {
+      background-color: #6c757d; /* Gray */
+      border: none;
+    }
+
+    .navigation-buttons .btn-secondary:hover {
+      background-color: #5a6268; /* Darker gray */
+      transform: translateY(-2px);
+    }
+
+    .navigation-buttons .btn-primary {
+      background-color: #41cc45; /* Slightly toned-down green */
+      border: none;
+    }
+
+    .navigation-buttons .btn-primary:hover {
+      background-color: #66ff66; /* Brighter green on hover */
+      transform: translateY(-2px);
+    }
+
+    .navigation-buttons .btn-success {
+      background-color: #28a745; /* Green */
+      border: none;
+    }
+
+    .navigation-buttons .btn-success:hover {
+      background-color: #218838; /* Darker green */
+      transform: translateY(-2px);
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 60px;
+      }
+      .sidebar:hover {
+        width: 60px;
+      }
+      .main-content {
+        margin-left: 60px;
+      }
+      .sidebar:hover ~ .main-content {
+        margin-left: 60px;
+      }
     }
   </style>
 </head>
@@ -86,43 +232,39 @@
   <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
     <div class="container-fluid">
       <a class="navbar-brand" href="index.html">InvestIQ</a>
-      <div class="d-flex">
-        <a class="nav-link text-white" href="#"><i class="bi bi-person-circle"></i> Login</a>
-      </div>
     </div>
   </nav>
 
-  <!-- Sidebar -->
-  <div class="sidebar bg-light">
-    <ul class="nav flex-column">
-      <li class="nav-item">
-        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Dashboard">
-          <i class="bi bi-speedometer2"></i>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Portfolio">
-          <i class="bi bi-bar-chart-line"></i>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Transactions">
-          <i class="bi bi-currency-exchange"></i>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Analytics">
-          <i class="bi bi-graph-up"></i>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Settings">
-          <i class="bi bi-gear"></i>
-        </a>
-      </li>
-    </ul>
-  </div>
-
+<!-- Sidebar -->
+<div class="sidebar bg-dark">
+  <ul class="nav flex-column">
+    <li class="nav-item">
+      <a class="nav-link" href="analysis.html" title="Analysis">
+        <i class="bi bi-graph-up-arrow"></i><span> Analytics</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="simulator.html" title="Simulator">
+        <i class="bi bi-bar-chart-line"></i><span> Simulator</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="progress.html" title="Learning Hub">
+        <i class="bi bi-mortarboard"></i><span> Learning Hub</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="market.html" title="Market Mood">
+        <i class="bi bi-emoji-neutral"></i><span> Market Mood</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="candle.html" title="Candle Chart">
+        <i class="bi bi-bar-chart"></i><span> Candle Chart</span>
+      </a>
+    </li>
+  </ul>
+</div>
   <!-- Main Content -->
   <div class="main-content">
     <div class="learning-content">
@@ -146,63 +288,59 @@
     const nextButton = document.getElementById('next-module');
 
     async function fetchModules(levelId) {
-  try {
-    console.log(`Fetching modules for level ${levelId}`);
-    
-    const response = await fetch(`/api/modules/${levelId}`);
-    if (!response.ok) throw new Error(`Failed to fetch modules: ${response.statusText}`);
-    
-    const data = await response.json();
-    console.log("Modules received:", data); // Debugging
+      try {
+        console.log(`Fetching modules for level ${levelId}`);
+        const response = await fetch(`/api/modules/${levelId}`);
+        if (!response.ok) throw new Error(`Failed to fetch modules: ${response.statusText}`);
+        const data = await response.json();
+        console.log("Modules received:", data); // Debugging
 
-    if (!Array.isArray(data) || data.length === 0) {
-      throw new Error("No modules found or invalid data format");
+        if (!Array.isArray(data) || data.length === 0) {
+          throw new Error("No modules found or invalid data format");
+        }
+
+        modules = data; // Assign fetched modules
+        currentModuleIndex = 0; // Ensure a valid index
+        loadModule(currentModuleIndex);
+      } catch (error) {
+        console.error("Error fetching modules:", error);
+        moduleContent.innerHTML = `<p class="text-danger">Error loading modules. Please try again later.</p>`;
+      }
     }
 
-    modules = data; // Assign fetched modules
-    currentModuleIndex = 0; // Ensure a valid index
-    loadModule(currentModuleIndex);
-  } catch (error) {
-    console.error("Error fetching modules:", error);
-    moduleContent.innerHTML = `<p class="text-danger">Error loading modules. Please try again later.</p>`;
-  }
-}
+    function loadModule(index) {
+      if (!modules || modules.length === 0) {
+        console.error("No modules available.");
+        moduleContent.innerHTML = `<p class="text-danger">No modules found. Please try again later.</p>`;
+        return;
+      }
 
+      if (index < 0 || index >= modules.length) {
+        console.error("Invalid module index:", index);
+        return;
+      }
 
-function loadModule(index) {
-  if (!modules || modules.length === 0) {
-    console.error("No modules available.");
-    moduleContent.innerHTML = `<p class="text-danger">No modules found. Please try again later.</p>`;
-    return;
-  }
+      console.log("Loading module:", modules[index]); // Debugging output
 
-  if (index < 0 || index >= modules.length) {
-    console.error("Invalid module index:", index);
-    return;
-  }
+      moduleContent.innerHTML = `
+        <div class="module">
+          <h4>${modules[index].title}</h4>
+          ${modules[index].content}
+        </div>
+      `;
 
-  console.log("Loading module:", modules[index]); // Debugging output
+      prevButton.disabled = index === 0;
 
-  moduleContent.innerHTML = `
-    <div class="module">
-      <h4>${modules[index].title}</h4>
-      ${modules[index].content}
-    </div>
-  `;
-
-  prevButton.disabled = index === 0;
-
-  if (index === modules.length - 1) {
-    nextButton.textContent = "Move to Assessment";
-    nextButton.classList.remove("btn-primary");
-    nextButton.classList.add("btn-success");
-  } else {
-    nextButton.textContent = "Next";
-    nextButton.classList.remove("btn-success");
-    nextButton.classList.add("btn-primary");
-  }
-}
-
+      if (index === modules.length - 1) {
+        nextButton.textContent = "Move to Assessment";
+        nextButton.classList.remove("btn-primary");
+        nextButton.classList.add("btn-success");
+      } else {
+        nextButton.textContent = "Next";
+        nextButton.classList.remove("btn-success");
+        nextButton.classList.add("btn-primary");
+      }
+    }
 
     // Event listeners for navigation buttons
     prevButton.addEventListener('click', () => {
