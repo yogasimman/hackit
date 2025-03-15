@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>InvestIQ - Assessment</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
+  <!-- Custom CSS -->
+  <style>
+    body {
+      font-family: 'Montserrat', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f7fa;
+    }
+
+    /* Top Navbar */
+    .navbar {
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      background-color: #28a745 !important;
+    }
+
+    /* Sidebar styling */
+    .sidebar {
+      position: fixed;
+      top: 56px; /* Height of the navbar */
+      left: 0;
+      bottom: 0;
+      width: 80px;
+      background-color: #ffffff;
+      border-right: 1px solid #ddd;
+      padding-top: 20px;
+      z-index: 1050;
+    }
+
+    .sidebar .nav-link {
+      color: #555;
+      padding: 15px;
+      text-align: center;
+    }
+
+    .sidebar .nav-link:hover {
+      background-color: #f0f0f0;
+      color: #000;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    /* Main Content */
+    .main-content {
+      margin-left: 80px;
+      padding-top: 56px;
+      transition: margin-left 0.3s;
+    }
+
+    .sidebar:hover + .main-content {
+      margin-left: 180px;
+    }
+
+    /* Assessment Content */
+    .assessment-content {
+      padding: 20px;
+    }
+
+    .question {
+      margin-bottom: 20px;
+    }
+
+    .question h4 {
+      color: #28a745;
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="index.html">InvestIQ</a>
+      <div class="d-flex">
+        <a class="nav-link text-white" href="#"><i class="bi bi-person-circle"></i> Login</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Sidebar -->
+  <div class="sidebar bg-light">
+    <ul class="nav flex-column">
+      <li class="nav-item">
+        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Dashboard">
+          <i class="bi bi-speedometer2"></i>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Portfolio">
+          <i class="bi bi-bar-chart-line"></i>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Transactions">
+          <i class="bi bi-currency-exchange"></i>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Analytics">
+          <i class="bi bi-graph-up"></i>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Settings">
+          <i class="bi bi-gear"></i>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="assessment-content">
+      <h2 class="text-center mb-4">Assessment</h2>
+      <div id="questions"></div>
+      <button class="btn btn-primary" id="submit-assessment">Submit</button>
+      <p id="result" class="mt-3"></p>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle (includes Popper) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Custom JS -->
+  <script>
+    const questions = [
+      {
+        question: "What is inflation?",
+        answer: "An increase in prices"
+      },
+      {
+        question: "What is the primary purpose of diversification?",
+        answer: "To reduce risk"
+      }
+    ];
+
+    const questionsContainer = document.getElementById('questions');
+    const resultElement = document.getElementById('result');
+
+    questions.forEach((q, index) => {
+      questionsContainer.innerHTML += `
+        <div class="question">
+          <h4>Question ${index + 1}</h4>
+          <p>${q.question}</p>
+          <input type="text" class="form-control mb-3" id="answer-${index}" placeholder="Your answer">
+        </div>
+      `;
+    });
+
+    document.getElementById('submit-assessment').addEventListener('click', () => {
+      let allCorrect = true;
+      questions.forEach((q, index) => {
+        const userAnswer = document.getElementById(`answer-${index}`).value.trim();
+        if (userAnswer.toLowerCase() !== q.answer.toLowerCase()) {
+          allCorrect = false;
+        }
+      });
+
+      if (allCorrect) {
+        resultElement.textContent = "All answers are correct! You have unlocked the next level.";
+        resultElement.style.color = "green";
+        // Unlock the next node in the progress tree (you can use localStorage or a backend to track progress)
+      } else {
+        resultElement.textContent = "Some answers are incorrect. Please try again.";
+        resultElement.style.color = "red";
+      }
+    });
+  </script>
+</body>
+</html>
