@@ -1,0 +1,10 @@
+numpy
+pandas
+matplotlib
+scipy
+scikit-learn
+tensorflow       # or torch if you prefer PyTorch
+keras            # optional if using TensorFlow 2.x (integrated in tf.keras)
+simpy            # for discrete event simulation, if needed
+gym              # if using reinforcement learning environments
+backtrader       # for backtesting trading strategies
