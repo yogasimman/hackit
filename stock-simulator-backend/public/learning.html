@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>InvestIQ - Learning</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
+  <!-- Custom CSS -->
+  <style>
+    body {
+      font-family: 'Montserrat', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f7fa;
+    }
+
+    /* Top Navbar */
+    .navbar {
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      background-color: #28a745 !important;
+    }
+
+    /* Sidebar styling */
+    .sidebar {
+      position: fixed;
+      top: 56px; /* Height of the navbar */
+      left: 0;
+      bottom: 0;
+      width: 80px;
+      background-color: #ffffff;
+      border-right: 1px solid #ddd;
+      padding-top: 20px;
+      z-index: 1050;
+    }
+
+    .sidebar .nav-link {
+      color: #555;
+      padding: 15px;
+      text-align: center;
+    }
+
+    .sidebar .nav-link:hover {
+      background-color: #f0f0f0;
+      color: #000;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    /* Main Content */
+    .main-content {
+      margin-left: 80px;
+      padding-top: 56px;
+      transition: margin-left 0.3s;
+    }
+
+    .sidebar:hover + .main-content {
+      margin-left: 180px;
+    }
+
+    /* Learning Content */
+    .learning-content {
+      padding: 20px;
+    }
+
+    .module {
+      margin-bottom: 40px;
+    }
+
+    .module h4 {
+      color: #28a745;
+    }
+
+    .navigation-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="index.html">InvestIQ</a>
+      <div class="d-flex">
+        <a class="nav-link text-white" href="#"><i class="bi bi-person-circle"></i> Login</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Sidebar -->
+  <div class="sidebar bg-light">
+    <ul class="nav flex-column">
+      <li class="nav-item">
+        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Dashboard">
+          <i class="bi bi-speedometer2"></i>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Portfolio">
+          <i class="bi bi-bar-chart-line"></i>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Transactions">
+          <i class="bi bi-currency-exchange"></i>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Analytics">
+          <i class="bi bi-graph-up"></i>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Settings">
+          <i class="bi bi-gear"></i>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="learning-content">
+      <h2 class="text-center mb-4">Learning Modules</h2>
+      <div id="module-content"></div>
+      <div class="navigation-buttons">
+        <button class="btn btn-secondary" id="prev-module">Previous</button>
+        <button class="btn btn-primary" id="next-module">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle (includes Popper) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Custom JS -->
+  <script>
+    let currentModuleIndex = 0;
+    let modules = [];
+    const moduleContent = document.getElementById('module-content');
+    const prevButton = document.getElementById('prev-module');
+    const nextButton = document.getElementById('next-module');
+
+    async function fetchModules(levelId) {
+  try {
+    console.log(`Fetching modules for level ${levelId}`);
+    
+    const response = await fetch(`/api/modules/${levelId}`);
+    if (!response.ok) throw new Error(`Failed to fetch modules: ${response.statusText}`);
+    
+    const data = await response.json();
+    console.log("Modules received:", data); // Debugging
+
+    if (!Array.isArray(data) || data.length === 0) {
+      throw new Error("No modules found or invalid data format");
+    }
+
+    modules = data; // Assign fetched modules
+    currentModuleIndex = 0; // Ensure a valid index
+    loadModule(currentModuleIndex);
+  } catch (error) {
+    console.error("Error fetching modules:", error);
+    moduleContent.innerHTML = `<p class="text-danger">Error loading modules. Please try again later.</p>`;
+  }
+}
+
+
+function loadModule(index) {
+  if (!modules || modules.length === 0) {
+    console.error("No modules available.");
+    moduleContent.innerHTML = `<p class="text-danger">No modules found. Please try again later.</p>`;
+    return;
+  }
+
+  if (index < 0 || index >= modules.length) {
+    console.error("Invalid module index:", index);
+    return;
+  }
+
+  console.log("Loading module:", modules[index]); // Debugging output
+
+  moduleContent.innerHTML = `
+    <div class="module">
+      <h4>${modules[index].title}</h4>
+      ${modules[index].content}
+    </div>
+  `;
+
+  prevButton.disabled = index === 0;
+
+  if (index === modules.length - 1) {
+    nextButton.textContent = "Move to Assessment";
+    nextButton.classList.remove("btn-primary");
+    nextButton.classList.add("btn-success");
+  } else {
+    nextButton.textContent = "Next";
+    nextButton.classList.remove("btn-success");
+    nextButton.classList.add("btn-primary");
+  }
+}
+
+
+    // Event listeners for navigation buttons
+    prevButton.addEventListener('click', () => {
+      if (currentModuleIndex > 0) {
+        currentModuleIndex--;
+        loadModule(currentModuleIndex);
+      }
+    });
+
+    nextButton.addEventListener('click', () => {
+      if (currentModuleIndex < modules.length - 1) {
+        currentModuleIndex++;
+        loadModule(currentModuleIndex);
+      } else {
+        // Redirect to assessment page
+        window.location.href = `assessment.html?level=${new URLSearchParams(window.location.search).get('level')}`;
+      }
+    });
+
+    // Fetch modules when the page loads
+    const levelId = new URLSearchParams(window.location.search).get('level');
+    if (levelId) {
+      fetchModules(levelId);
+    } else {
+      alert('Level ID not found in URL.');
+    }
+  </script>
+</body>
+</html>
