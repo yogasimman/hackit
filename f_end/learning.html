@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Progress Tree with XP System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      color: #333;
+    }
+    .progress-tree {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 20px;
+    }
+    .node {
+      background-color: #007bff;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      margin: 10px;
+      cursor: pointer;
+      text-align: center;
+      transition: background-color 0.3s ease;
+    }
+    .node.completed {
+      background-color: #28a745;
+    }
+    .node.current {
+      background-color: #ffc107;
+    }
+    .node.locked {
+      background-color: #6c757d;
+      cursor: not-allowed;
+    }
+    .node:hover:not(.locked) {
+      background-color: #0056b3;
+    }
+    .path {
+      display: flex;
+      justify-content: space-around;
+      margin: 20px 0;
+    }
+    .xp-display {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      color: #555;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+    }
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+    }
+    .modal-content {
+      text-align: center;
+    }
+    .modal button {
+      margin: 10px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+    }
+    .modal button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h1>Progress Tree with XP System</h1>
+  <div class="progress-tree" id="progress-tree">
+    <!-- Nodes will be dynamically added here -->
+  </div>
+  <div class="xp-display" id="xp-display">Total XP: 0</div>
+
+  <!-- Modal for Learning Content -->
+  <div class="modal-overlay" id="modal-overlay"></div>
+  <div class="modal" id="learning-modal">
+    <div class="modal-content">
+      <h2 id="modal-title">Learning Content</h2>
+      <p id="modal-content"></p>
+      <button id="start-assessment">Start Assessment</button>
+      <button id="close-modal">Close</button>
+    </div>
+  </div>
+
+  <!-- Modal for Assessment -->
+  <div class="modal" id="assessment-modal">
+    <div class="modal-content">
+      <h2>Assessment</h2>
+      <p id="assessment-question"></p>
+      <input type="text" id="assessment-answer" placeholder="Your answer">
+      <button id="submit-assessment">Submit</button>
+      <p id="assessment-result"></p>
+    </div>
+  </div>
+
+  <script>
+    // Data for nodes, paths, and assessments
+    const nodes = [
+      { id: 1, title: "Basics of Investing", isBasic: true, xp: 10 },
+      { id: 2, title: "Choose Path: Stocks", isBasic: false, xp: 20 },
+      { id: 3, title: "Choose Path: Gold", isBasic: false, xp: 20 },
+      { id: 4, title: "Choose Path: Real Estate", isBasic: false, xp: 20 },
+      { id: 5, title: "Advanced Strategies", isBasic: false, xp: 30 },
+      { id: 6, title: "Final Destination", isBasic: false, xp: 50 },
+    ];
+
+    const paths = [
+      { from: 1, to: 2 }, // Basics -> Stocks
+      { from: 1, to: 3 }, // Basics -> Gold
+      { from: 1, to: 4 }, // Basics -> Real Estate
+      { from: 2, to: 5 }, // Stocks -> Advanced
+      { from: 3, to: 5 }, // Gold -> Advanced
+      { from: 4, to: 5 }, // Real Estate -> Advanced
+      { from: 5, to: 6 }, // Advanced -> Final Destination
+    ];
+
+    const assessments = {
+      1: { question: "What is diversification?", answer: "Spreading investments" },
+      2: { question: "What is a stock?", answer: "Share in a company" },
+      3: { question: "What is gold used for?", answer: "Store of value" },
+      4: { question: "What is real estate?", answer: "Property investment" },
+      5: { question: "What is a portfolio?", answer: "Collection of investments" },
+      6: { question: "What is your final goal?", answer: "Financial freedom" },
+    };
+
+    // User progress and XP
+    let userProgress = [];
+    let totalXP = 0;
+
+    // Render progress tree
+    const progressTree = document.getElementById("progress-tree");
+    const xpDisplay = document.getElementById("xp-display");
+
+    function renderProgressTree() {
+      progressTree.innerHTML = "";
+      nodes.forEach(node => {
+        const nodeElement = document.createElement("div");
+        nodeElement.className = "node";
+        nodeElement.textContent = node.title;
+        nodeElement.setAttribute("data-node-id", node.id);
+
+        if (userProgress.includes(node.id)) {
+          nodeElement.classList.add("completed");
+        } else if (isNodeUnlocked(node.id)) {
+          nodeElement.classList.add("current");
+        } else {
+          nodeElement.classList.add("locked");
+        }
+
+        nodeElement.addEventListener("click", () => handleNodeClick(node.id));
+        progressTree.appendChild(nodeElement);
+      });
+    }
+
+    // Check if a node is unlocked
+    function isNodeUnlocked(nodeId) {
+      if (nodes.find(node => node.id === nodeId).isBasic) return true;
+      const path = paths.find(path => path.to === nodeId);
+      return userProgress.includes(path.from);
+    }
+
+    // Handle node click
+    function handleNodeClick(nodeId) {
+      const node = nodes.find(node => node.id === nodeId);
+      if (!isNodeUnlocked(nodeId)) return;
+
+      openLearningModal(node);
+    }
+
+    // Open learning modal
+    function openLearningModal(node) {
+      const modal = document.getElementById("learning-modal");
+      const modalOverlay = document.getElementById("modal-overlay");
+      const modalTitle = document.getElementById("modal-title");
+      const modalContent = document.getElementById("modal-content");
+
+      modalTitle.textContent = node.title;
+      modalContent.textContent = `Learn about ${node.title}.`;
+      modal.style.display = "block";
+      modalOverlay.style.display = "block";
+
+      document.getElementById("start-assessment").onclick = () => {
+        modal.style.display = "none";
+        modalOverlay.style.display = "none";
+        openAssessmentModal(node.id);
+      };
+
+      document.getElementById("close-modal").onclick = () => {
+        modal.style.display = "none";
+        modalOverlay.style.display = "none";
+      };
+    }
+
+    // Open assessment modal
+    function openAssessmentModal(nodeId) {
+      const modal = document.getElementById("assessment-modal");
+      const modalOverlay = document.getElementById("modal-overlay");
+      const questionElement = document.getElementById("assessment-question");
+      const resultElement = document.getElementById("assessment-result");
+
+      const assessment = assessments[nodeId];
+      questionElement.textContent = assessment.question;
+
+      modal.style.display = "block";
+      modalOverlay.style.display = "block";
+
+      document.getElementById("submit-assessment").onclick = () => {
+        const userAnswer = document.getElementById("assessment-answer").value.trim();
+        if (userAnswer.toLowerCase() === assessment.answer.toLowerCase()) {
+          resultElement.textContent = "Correct!";
+          resultElement.style.color = "green";
+          completeNode(nodeId);
+        } else {
+          resultElement.textContent = "Incorrect. Try again.";
+          resultElement.style.color = "red";
+        }
+      };
+    }
+
+    // Complete a node and award XP
+    function completeNode(nodeId) {
+      if (!userProgress.includes(nodeId)) {
+        userProgress.push(nodeId);
+        const node = nodes.find(node => node.id === nodeId);
+        totalXP += node.xp;
+        xpDisplay.textContent = `Total XP: ${totalXP}`;
+        renderProgressTree();
+      }
+    }
+
+    // Initial render
+    renderProgressTree();
+  </script>
+</body>
+</html>

@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>InvestIQ - Progress Tree</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
+  <!-- Custom CSS -->
+  <style>
+    body {
+      font-family: 'Montserrat', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f7fa;
+    }
+
+    /* Top Navbar */
+    .navbar {
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      background-color: #28a745 !important;
+    }
+
+    /* Sidebar styling */
+    .sidebar {
+      position: fixed;
+      top: 56px; /* Height of the navbar */
+      left: 0;
+      bottom: 0;
+      width: 80px;
+      background-color: #ffffff;
+      border-right: 1px solid #ddd;
+      padding-top: 20px;
+      z-index: 1050;
+    }
+
+    .sidebar .nav-link {
+      color: #555;
+      padding: 15px;
+      text-align: center;
+    }
+
+    .sidebar .nav-link:hover {
+      background-color: #f0f0f0;
+      color: #000;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    /* Main Content */
+    .main-content {
+      margin-left: 80px;
+      padding-top: 56px;
+      transition: margin-left 0.3s;
+    }
+
+    .sidebar:hover + .main-content {
+      margin-left: 180px;
+    }
+
+    /* Progress Tree */
+    .progress-tree {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    .level {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 40px;
+      position: relative;
+    }
+
+    .level::before {
+      content: '';
+      position: absolute;
+      width: 80%;
+      height: 3px;
+      background: linear-gradient(90deg, #28a745, #218838);
+      top: 50%;
+      left: 10%;
+      z-index: -1;
+    }
+
+    .node {
+      background: linear-gradient(135deg, #007bff, #0056b3);
+      color: white;
+      padding: 20px;
+      border-radius: 50%;
+      margin: 0 15px;
+      cursor: pointer;
+      transition: all 0.3s ease-in-out;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      width: 80px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+
+    .node.completed {
+      background: linear-gradient(135deg, #28a745, #218838);
+    }
+
+    .node.current {
+      background: linear-gradient(135deg, #ffc107, #ff9800);
+      animation: pulse 1.5s infinite, float 3s ease-in-out infinite;
+    }
+
+    .node.locked {
+      background: linear-gradient(135deg, #6c757d, #495057);
+      cursor: not-allowed;
+    }
+
+    .node:hover:not(.locked) {
+      background: linear-gradient(135deg, #0056b3, #003f7f);
+      transform: scale(1.15);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .node::after {
+      content: attr(data-title);
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-top: 12px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      color: #444;
+      white-space: nowrap;
+    }
+
+    /* Animations */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+      100% { transform: translateY(0); }
+    }
+
+    .xp-display {
+      margin-top: 30px;
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #444;
+      animation: fadeIn 2s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    /* Modal for Learning and Assessment */
+    .modal-content {
+      border-radius: 15px;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+      animation: slideIn 0.5s ease-in-out;
+    }
+
+    @keyframes slideIn {
+      0% { transform: translateY(-50px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-header {
+      background: linear-gradient(135deg, #28a745, #218838);
+      color: white;
+      border-radius: 15px 15px 0 0;
+    }
+
+    .modal-body {
+      padding: 25px;
+    }
+
+    .modal-footer {
+      border-top: none;
+    }
+
+    /* Investment Options */
+    .investment-options {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 20px;
+    }
+
+    .investment-option {
+      padding: 12px 25px;
+      border: 3px solid #28a745;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .investment-option:hover {
+      background: linear-gradient(135deg, #28a745, #218838);
+      color: white;
+      transform: scale(1.15);
+    }
+
+    .investment-option.selected {
+      background: linear-gradient(135deg, #28a745, #218838);
+      color: white;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 60px;
+      }
+
+      .sidebar:hover {
+        width: 150px;
+      }
+
+      .main-content {
+        margin-left: 60px;
+      }
+
+      .sidebar:hover + .main-content {
+        margin-left: 150px;
+      }
+
+      .node {
+        width: 65px;
+        height: 65px;
+        font-size: 0.9rem;
+        padding: 15px;
+      }
+
+      .level::before {
+        width: 70%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">InvestIQ</a>
+      <div class="d-flex">
+        <a class="nav-link text-white" href="#"><i class="bi bi-person-circle"></i> Login</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Sidebar -->
+  <div class="sidebar bg-light">
+    <ul class="nav flex-column">
+      <li class="nav-item">
+        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Dashboard">
+          <i class="bi bi-speedometer2"></i>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Portfolio">
+          <i class="bi bi-bar-chart-line"></i>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Transactions">
+          <i class="bi bi-currency-exchange"></i>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Analytics">
+          <i class="bi bi-graph-up"></i>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Settings">
+          <i class="bi bi-gear"></i>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Progress Tree Section -->
+    <section class="progress-tree">
+      <h2 class="text-center mb-4">Progress Tree</h2>
+      <div class="level">
+        <div class="node current" data-node-id="1" data-title="Basics">1</div>
+      </div>
+      <div class="level">
+        <div class="node locked" data-node-id="2" data-title="Stocks">2</div>
+        <div class="node locked" data-node-id="3" data-title="Gold">3</div>
+        <div class="node locked" data-node-id="4" data-title="Real Estate">4</div>
+      </div>
+      <div class="level">
+        <div class="node locked" data-node-id="5" data-title="Advanced">5</div>
+      </div>
+      <div class="level">
+        <div class="node locked" data-node-id="6" data-title="Final">6</div>
+      </div>
+      <div class="xp-display">Total XP: <span id="total-xp">0</span></div>
+    </section>
+  </div>
+
+  <!-- Learning Modal -->
+  <div class="modal fade" id="learningModal" tabindex="-1" aria-labelledby="learningModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="learningModalLabel">Learning Content</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p id="learning-content"></p>
+          <div class="investment-options">
+            <div class="investment-option" data-option="stocks">Stocks</div>
+            <div class="investment-option" data-option="gold">Gold</div>
+            <div class="investment-option" data-option="real-estate">Real Estate</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="start-assessment">Start Assessment</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Assessment Modal -->
+  <div class="modal fade" id="assessmentModal" tabindex="-1" aria-labelledby="assessmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="assessmentModalLabel">Assessment</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p id="assessment-question"></p>
+          <input type="text" id="assessment-answer" class="form-control" placeholder="Your answer">
+          <p id="assessment-result" class="mt-2"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="submit-assessment">Submit</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle (includes Popper) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Custom JS -->
+  <script>
+    // Data for nodes, paths, and assessments
+    const nodes = [
+      { id: 1, title: "Basics of Investing", isBasic: true, xp: 10, content: "Diversification is a risk management strategy that mixes a wide variety of investments within a portfolio. The rationale behind this technique contends that a portfolio constructed of different kinds of investments will, on average, yield higher returns and pose a lower risk than any individual investment found within the portfolio." },
+      { id: 2, title: "Stocks", isBasic: false, xp: 20, content: "A stock is a type of security that signifies ownership in a corporation and represents a claim on part of the corporation's assets and earnings." },
+      { id: 3, title: "Gold", isBasic: false, xp: 20, content: "Gold is a precious metal that has been used as a form of currency, investment, and jewelry for thousands of years. It is often considered a safe-haven asset during times of economic uncertainty." },
+      { id: 4, title: "Real Estate", isBasic: false, xp: 20, content: "Real estate is property consisting of land and the buildings on it, along with its natural resources such as crops, minerals, or water. It is a popular investment option due to its potential for appreciation and rental income." },
+      { id: 5, title: "Advanced Strategies", isBasic: false, xp: 30, content: "Advanced investment strategies include techniques such as options trading, short selling, and leveraging. These strategies can offer higher returns but also come with increased risk." },
+      { id: 6, title: "Final Destination", isBasic: false, xp: 50, content: "The final goal of investing is to achieve financial freedom, where your investments generate enough income to cover your living expenses, allowing you to live without the need for active employment." },
+    ];
+
+    const assessments = {
+      1: { question: "What is diversification?", answer: "Spreading investments" },
+      2: { question: "What is a stock?", answer: "Share in a company" },
+      3: { question: "What is gold used for?", answer: "Store of value" },
+      4: { question: "What is real estate?", answer: "Property investment" },
+      5: { question: "What is a portfolio?", answer: "Collection of investments" },
+      6: { question: "What is your final goal?", answer: "Financial freedom" },
+    };
+
+    let userProgress = [];
+    let totalXP = 0;
+    let selectedInvestment = null;
+
+    // Handle node clicks
+    document.querySelectorAll('.node').forEach(node => {
+      node.addEventListener('click', () => {
+        const nodeId = parseInt(node.getAttribute('data-node-id'));
+        if (!node.classList.contains('locked')) {
+          openLearningModal(nodeId);
+        }
+      });
+    });
+
+    // Open learning modal
+    function openLearningModal(nodeId) {
+      const node = nodes.find(n => n.id === nodeId);
+      const learningContent = document.getElementById('learning-content');
+      learningContent.textContent = node.content;
+
+      const learningModal = new bootstrap.Modal(document.getElementById('learningModal'));
+      learningModal.show();
+
+      // Handle investment option selection
+      document.querySelectorAll('.investment-option').forEach(option => {
+        option.addEventListener('click', () => {
+          document.querySelectorAll('.investment-option').forEach(o => o.classList.remove('selected'));
+          option.classList.add('selected');
+          selectedInvestment = option.getAttribute('data-option');
+        });
+      });
+
+      document.getElementById('start-assessment').onclick = () => {
+        if (!selectedInvestment) {
+          alert("Please select an investment option.");
+          return;
+        }
+        learningModal.hide();
+        openAssessmentModal(nodeId);
+      };
+    }
+
+    // Open assessment modal
+    function openAssessmentModal(nodeId) {
+      const assessment = assessments[nodeId];
+      const assessmentQuestion = document.getElementById('assessment-question');
+      assessmentQuestion.textContent = assessment.question;
+
+      const assessmentModal = new bootstrap.Modal(document.getElementById('assessmentModal'));
+      assessmentModal.show();
+
+      document.getElementById('submit-assessment').onclick = () => {
+        const userAnswer = document.getElementById('assessment-answer').value.trim();
+        const resultElement = document.getElementById('assessment-result');
+        if (userAnswer.toLowerCase() === assessment.answer.toLowerCase()) {
+          resultElement.textContent = "Correct!";
+          resultElement.style.color = "green";
+          completeNode(nodeId);
+          assessmentModal.hide();
+        } else {
+          resultElement.textContent = "Incorrect. Try again.";
+          resultElement.style.color = "red";
+        }
+      };
+    }
+
+    // Complete a node and award XP
+    function completeNode(nodeId) {
+      if (!userProgress.includes(nodeId)) {
+        userProgress.push(nodeId);
+        const node = nodes.find(n => n.id === nodeId);
+        totalXP += node.xp;
+        document.getElementById('total-xp').textContent = totalXP;
+
+        // Update node states
+        const nodeElement = document.querySelector(`.node[data-node-id="${nodeId}"]`);
+        nodeElement.classList.remove('current');
+        nodeElement.classList.add('completed');
+
+        // Unlock next nodes
+        if (nodeId === 1) {
+          document.querySelectorAll('.node[data-node-id="2"], .node[data-node-id="3"], .node[data-node-id="4"]').forEach(n => {
+            n.classList.remove('locked');
+            n.classList.add('current');
+          });
+        } else if ([2, 3, 4].includes(nodeId)) {
+          document.querySelector('.node[data-node-id="5"]').classList.remove('locked');
+          document.querySelector('.node[data-node-id="5"]').classList.add('current');
+        } else if (nodeId === 5) {
+          document.querySelector('.node[data-node-id="6"]').classList.remove('locked');
+          document.querySelector('.node[data-node-id="6"]').classList.add('current');
+        }
+      }
+    }
+  </script>
+</body>
+</html>

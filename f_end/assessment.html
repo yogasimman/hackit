@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assessment</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      text-align: center;
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+    }
+    h1 {
+      color: #333;
+    }
+    .question {
+      margin: 20px 0;
+      font-size: 1.2rem;
+      color: #555;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Assessment</h1>
+    <div class="question" id="question">
+      <!-- Assessment question will be dynamically loaded here -->
+    </div>
+    <input type="text" id="answer" placeholder="Your answer">
+    <button id="submit-assessment">Submit</button>
+    <p id="result"></p>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const nodeId = urlParams.get('nodeId');
+      const questionElement = document.getElementById('question');
+      const answerInput = document.getElementById('answer');
+      const resultElement = document.getElementById('result');
+
+      // Simulate dynamic question loading based on nodeId
+      const questions = {
+        '1': 'What is the capital of France?',
+        '2': 'What is 2 + 2?',
+        '3': 'What is the largest planet?'
+      };
+
+      const correctAnswers = {
+        '1': 'Paris',
+        '2': '4',
+        '3': 'Jupiter'
+      };
+
+      questionElement.textContent = questions[nodeId] || 'No question available for this node.';
+
+      // Handle assessment submission
+      document.getElementById('submit-assessment').addEventListener('click', () => {
+        const userAnswer = answerInput.value.trim();
+        const correctAnswer = correctAnswers[nodeId];
+
+        if (userAnswer.toLowerCase() === correctAnswer.toLowerCase()) {
+          resultElement.textContent = 'Correct! You earned 10 XP.';
+          resultElement.style.color = 'green';
+        } else {
+          resultElement.textContent = `Incorrect. The correct answer is ${correctAnswer}.`;
+          resultElement.style.color = 'red';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
