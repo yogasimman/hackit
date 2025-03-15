@@ -1,11 +1,11 @@
-const User = require('../models/User')(require('../config/db'));
+const express = require('express');
+const userRoutes = require('./routes/userRoutes');
+const stockRoutes = require('./routes/stockRoutes'); // Renamed for clarity [[7]]
 
-exports.registerUser = async (req, res) => {
-  const { username, passwordHash, email } = req.body;
-  try {
-    const user = await User.createUser(username, passwordHash, email);
-    res.status(201).json(user);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
+const app = express();
+
+app.use(express.json());
+app.use('/api/users', userRoutes);    // User authentication/profiles
+app.use('/api/stocks', stockRoutes);  // Stock trading endpoints
+
+module.exports = app;

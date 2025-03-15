@@ -1,11 +1,11 @@
 const express = require('express');
 const userRoutes = require('./routes/userRoutes');
-const pathRoutes = require('./routes/pathRoutes');
+const stockRoutes = require('./routes/stockRoutes'); // Renamed for clarity [[7]]
 
 const app = express();
 
 app.use(express.json());
-app.use('/api/users', userRoutes);
-app.use('/api/paths', pathRoutes);
+app.use('/', userRoutes);    // User authentication/profiles
+app.use('/', stockRoutes);  // Stock trading endpoints
 
 module.exports = app;
