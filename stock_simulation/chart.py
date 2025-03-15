@@ -1,32 +1,38 @@
-# chart.py
 import pandas as pd
 import plotly.graph_objects as go
 import datetime
+import os
 
-def generate_candlestick_chart():
-    # Load the CSV file containing all companies' data
-    df = pd.read_csv('stock_data/NIFTY50_all.csv', parse_dates=['Date'])
+def generate_candlestick_chart(date_from, date_to):
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    csv_path = os.path.join(current_dir, 'stock_data', 'NIFTY50_all.csv')
     
-    # Group by Date and compute average Open, High, Low, Close across all rows
+    if isinstance(date_from, str):
+        date_from = datetime.datetime.strptime(date_from, '%Y-%m-%d')
+    if isinstance(date_to, str):
+        date_to = datetime.datetime.strptime(date_to, '%Y-%m-%d')
+    
+    df = pd.read_csv(csv_path, parse_dates=['Date'], dayfirst=True)  # Adjust if date format differs
+    
     df_avg = df.groupby('Date', as_index=False).agg({
         'Open': 'mean',
         'High': 'mean',
         'Low': 'mean',
         'Close': 'mean'
     })
-
-    # Sort by Date
+    
     df_avg.sort_values('Date', inplace=True)
-
-    # Filter date range (adjust as needed)
-    start_date = datetime.datetime(2010, 1, 1)
-    end_date   = datetime.datetime(2021, 12, 31)
-    mask = (df_avg['Date'] >= start_date) & (df_avg['Date'] <= end_date)
+    
+    mask = (df_avg['Date'] >= date_from) & (df_avg['Date'] <= date_to)
     df_avg = df_avg.loc[mask]
-
-    # Create a candlestick chart using Plotly
+    
+    if df_avg.empty:
+        return {'error': 'No data available for the selected date range'}
+    
+    dates = df_avg['Date'].dt.strftime('%Y-%m-%d').tolist()
+    
     fig = go.Figure(data=[go.Candlestick(
-        x=df_avg['Date'],
+        x=dates,
         open=df_avg['Open'],
         high=df_avg['High'],
         low=df_avg['Low'],
@@ -34,15 +40,13 @@ def generate_candlestick_chart():
         increasing_line_color='green',
         decreasing_line_color='red'
     )])
-
-    # Customize layout
+    
     fig.update_layout(
-        title='Nifty-50 Average - Candlestick Chart (Simple Mean of All Constituents)',
-        xaxis_title='Date',
-        yaxis_title='Price (INR)',
-        xaxis_rangeslider_visible=False
+        autosize=True,
+        title='Nifty-50 Average - Candlestick Chart',
+        xaxis=dict(title='Date', rangeslider_visible=False, type='date'),
+        yaxis=dict(title='Price (INR)'),
+        margin=dict(l=50, r=50, t=50, b=50)
     )
-
-    # Convert the Plotly figure to an HTML snippet
-    graph_html = fig.to_html(full_html=False)
-    return graph_html
+    
+    return fig.to_dict()
