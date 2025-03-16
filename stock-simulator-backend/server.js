@@ -1,16 +1,25 @@
 // server.js
 
-const express = require('express');
-const path = require('path');
-const { Pool } = require('pg');
-const bcrypt = require('bcrypt');
-const session = require('express-session');
-const cors = require('cors');
+import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import pkg from 'pg';
+const { Pool } = pkg;
+import bcrypt from 'bcrypt';
+import session from 'express-session';
+import cors from 'cors';
+import fetch from 'node-fetch';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
 // Middleware to parse JSON bodies
 app.use(express.json());
+
+// Enable CORS if needed
+app.use(cors());
 
 // Setup session middleware (use a strong secret in production)
 app.use(session({
@@ -37,9 +46,9 @@ const pool = new Pool({
 let simulationState = {
   currentDate: null,    // Current simulation date (YYYY-MM-DD)
   speed: null,          // Milliseconds per simulated day
-  timer: null,          // Timer handle
+  timer: null,          // Timer handle (not serializable)
   portfolio: [],        // Array of purchased stocks: { symbol, quantity, purchasePrice, currentPrice, currentValue }
-  totalValue: 0         // Total portfolio value (sum of each stock’s currentValue)
+  totalValue: 0         // Total portfolio value (sum of each stock's currentValue)
 };
 
 // Utility function to increment a date string by one day
@@ -50,20 +59,18 @@ const incrementDate = (dateStr) => {
 };
 
 // Function to update portfolio prices for the current simulation date.
-// For each stock in simulationState.portfolio, query the respective table for the "Close" price.
+// For each stock in simulationState.portfolio, call the Python API to get the "Close" price.
 const updatePortfolioPrices = async () => {
   let totalValue = 0;
   for (let stock of simulationState.portfolio) {
     const symbol = stock.symbol;
-    // Assume the table is named exactly as the symbol.
-    const query = `SELECT "Close" FROM "${symbol}" WHERE "Date" = $1`;
     try {
-      const result = await pool.query(query, [simulationState.currentDate]);
-      if (result.rows.length > 0) {
-        stock.currentPrice = result.rows[0].Close;
+      const response = await fetch(`http://localhost:5000/api/getStockData?stock=${symbol}&date=${simulationState.currentDate}`);
+      const data = await response.json();
+      if (data.Close) {
+        stock.currentPrice = parseFloat(data.Close);
         stock.currentValue = stock.quantity * stock.currentPrice;
       } else {
-        // If no data exists for this date, keep previous price.
         stock.currentValue = stock.quantity * stock.currentPrice;
       }
       totalValue += stock.currentValue;
@@ -74,37 +81,33 @@ const updatePortfolioPrices = async () => {
   simulationState.totalValue = totalValue;
 };
 
-// Endpoint to get stocks and their prices on a given date.
-// For simplicity, we assume a predefined list of stock symbols.
+// Endpoint to get stocks and their prices on a given date using the Python API.
 app.post('/api/getStocksByDate', async (req, res) => {
   const { date } = req.body;
-  const stocks = ["AAPL", "GOOG", "MSFT"]; // Update this list as needed.
-  let stocksData = [];
-  for (let symbol of stocks) {
-    const query = `SELECT * FROM "${symbol}" WHERE "Date" = $1`;
-    try {
-      const result = await pool.query(query, [date]);
-      if (result.rows.length > 0) {
-        stocksData.push(result.rows[0]);
-      }
-    } catch (err) {
-      console.error(`Error retrieving data for ${symbol} on ${date}:`, err);
-    }
+  try {
+    const response = await fetch('http://localhost:5000/api/getStocksByDate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ date })
+    });
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    console.error('Error fetching stocks by date:', err);
+    res.status(500).json({ error: 'Failed to fetch stocks data' });
   }
-  res.json({ stocks: stocksData });
 });
 
-// Endpoint to "buy" a stock: record a purchase in the simulation portfolio.
+// Endpoint to "buy" a stock using the Python API to get the price on the given date.
 app.post('/api/buyStock', async (req, res) => {
   const { symbol, quantity, date } = req.body;
-  const query = `SELECT "Close" FROM "${symbol}" WHERE "Date" = $1`;
   try {
-    const result = await pool.query(query, [date]);
-    if (result.rows.length === 0) {
+    const response = await fetch(`http://localhost:5000/api/getStockData?stock=${symbol}&date=${date}`);
+    const data = await response.json();
+    if (!data.Close) {
       return res.status(400).json({ error: 'No data for this stock on that date' });
     }
-    const purchasePrice = result.rows[0].Close;
-    // Add the stock to the simulation portfolio.
+    const purchasePrice = parseFloat(data.Close);
     simulationState.portfolio.push({
       symbol,
       quantity,
@@ -124,15 +127,13 @@ app.post('/api/startSimulator', (req, res) => {
   const { startDate, speed } = req.body;
   simulationState.currentDate = startDate;
   simulationState.speed = speed * 1000; // Convert seconds to milliseconds.
-  // Clear any existing timer.
   if (simulationState.timer) clearInterval(simulationState.timer);
   simulationState.timer = setInterval(async () => {
     simulationState.currentDate = incrementDate(simulationState.currentDate);
     await updatePortfolioPrices();
-    // Optionally, you could broadcast simulationState using WebSockets here.
     console.log(`Simulated Date: ${simulationState.currentDate}, Total Value: ${simulationState.totalValue}`);
   }, simulationState.speed);
-  res.json({ message: 'Simulator started', simulationState });
+  res.json({ message: 'Simulator started', simulationState: { ...simulationState, timer: undefined } });
 });
 
 // Endpoint to pause the simulator.
@@ -175,14 +176,46 @@ app.post('/api/stopSimulator', (req, res) => {
 
 // Endpoint to get the current simulator status (for dynamic UI updates)
 app.get('/api/simulatorStatus', (req, res) => {
-  res.json({ simulationState });
+  const { timer, ...stateWithoutTimer } = simulationState;
+  res.json({ simulationState: stateWithoutTimer });
 });
 
 // ----------------------
-// Authentication Endpoints (unchanged)
+// Investment Rollercoaster Analysis Endpoints
 // ----------------------
 
-// Registration endpoint
+// Proxy endpoint for the rollercoaster analysis.
+// We fix any "NaN" values by replacing them with "null" in the raw response.
+app.get('/api/rollercoaster', async (req, res) => {
+  try {
+    const queryParams = new URLSearchParams(req.query).toString();
+    const response = await fetch(`http://localhost:5000/api/rollercoaster?${queryParams}`);
+    const rawText = await response.text();
+    // Replace all occurrences of "NaN" with "null" to make valid JSON.
+    const fixedText = rawText.replace(/\bNaN\b/g, "null");
+    const data = JSON.parse(fixedText);
+    res.json(data);
+  } catch (err) {
+    console.error('Error fetching rollercoaster data:', err);
+    res.status(500).json({ error: 'Failed to fetch rollercoaster data' });
+  }
+});
+
+// Endpoint to get all stock symbols.
+app.get('/api/getAllStocks', async (req, res) => {
+  try {
+    const response = await fetch('http://localhost:5000/api/getAllStocks');
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    console.error('Error fetching all stocks:', err);
+    res.status(500).json({ error: 'Failed to fetch stocks' });
+  }
+});
+
+// ----------------------
+// Authentication Endpoints
+// ----------------------
 app.post('/api/register', async (req, res) => {
   const { name, email, password } = req.body;
   try {
@@ -203,7 +236,6 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// Login endpoint with session creation
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -224,7 +256,6 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// Session endpoint for checking login status
 app.get('/api/session', (req, res) => {
   if (req.session.user) {
     res.json({ loggedIn: true, user: req.session.user });
@@ -233,7 +264,6 @@ app.get('/api/session', (req, res) => {
   }
 });
 
-// Logout endpoint
 app.post('/api/logout', (req, res) => {
   req.session.destroy(err => {
     if (err) return res.status(500).json({ error: 'Logout failed' });
@@ -241,10 +271,10 @@ app.post('/api/logout', (req, res) => {
   });
 });
 
-
-//kesav
-
-// API to get user progress and levels
+// ----------------------
+// Additional Endpoints (Progress, Modules, Questions, Responses)
+// (Existing endpoints remain unchanged.)
+// ----------------------
 app.get('/api/progress/:userId', async (req, res) => {
   const { userId } = req.params;
   try {
@@ -274,7 +304,6 @@ app.get('/api/progress/:userId', async (req, res) => {
   }
 });
 
-// API to get modules for a specific level
 app.get('/api/modules/:levelId', async (req, res) => {
   const { levelId } = req.params;
   try {
@@ -286,7 +315,6 @@ app.get('/api/modules/:levelId', async (req, res) => {
   }
 });
 
-// API to get questions for a specific level
 app.get('/api/questions/:levelId', async (req, res) => {
   const { levelId } = req.params;
   try {
@@ -298,7 +326,6 @@ app.get('/api/questions/:levelId', async (req, res) => {
   }
 });
 
-// API to submit user responses
 app.post('/api/responses', async (req, res) => {
   const { userId, responses } = req.body;
   try {
@@ -306,7 +333,7 @@ app.post('/api/responses', async (req, res) => {
     for (const response of responses) {
       const { questionId, selectedOption } = response;
       const questionResult = await pool.query('SELECT correct_option FROM questions WHERE id = $1', [questionId]);
-      const correctOption = questionResult.rows[0]?.correct_option;
+      const correctOption = questionResult.rows[0].correct_option;
       const isCorrect = selectedOption === correctOption;
       await pool.query(
         'INSERT INTO user_responses (user_id, question_id, selected_option, is_correct) VALUES ($1, $2, $3, $4)',
@@ -317,10 +344,32 @@ app.post('/api/responses', async (req, res) => {
       }
     }
     if (allCorrect) {
-      await pool.query('UPDATE user_progress SET completed = TRUE, xp_earned = xp_earned + 100 WHERE user_id = $1 AND level_id = 1', [userId]);
+      await pool.query(
+        'UPDATE user_progress SET completed = TRUE, xp_earned = xp_earned + 100 WHERE user_id = $1 AND level_id = 1',
+        [userId]
+      );
       await pool.query('UPDATE user_xp SET total_xp = total_xp + 100 WHERE user_id = $1', [userId]);
     }
     res.json({ success: true, allCorrect });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/update-progress', async (req, res) => {
+  const { userId, levelId } = req.body;
+  try {
+    await pool.query(
+      'UPDATE user_progress SET completed = TRUE, current = FALSE WHERE user_id = $1 AND level_id = $2',
+      [userId, levelId]
+    );
+    const nextLevelId = parseInt(levelId) + 1;
+    await pool.query(
+      'INSERT INTO user_progress (user_id, level_id, current) VALUES ($1, $2, TRUE) ON CONFLICT (user_id, level_id) DO UPDATE SET current = TRUE',
+      [userId, nextLevelId]
+    );
+    res.json({ success: true });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Internal server error' });
@@ -334,7 +383,7 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Start the server
+// Start the server on the specified port
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

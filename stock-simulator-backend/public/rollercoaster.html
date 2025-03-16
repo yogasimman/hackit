@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>InvestIQ - Investment Rollercoaster</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Custom CSS -->
+  <style>
+    /* Base Styles */
+    body {
+      font-family: 'Montserrat', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #0a0a0a; /* Dark background */
+      color: #e0e0e0; /* Light text */
+    }
+
+    /* Navbar */
+    .navbar {
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background-color: #111; /* Dark navbar */
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+    }
+
+    .navbar-brand {
+      font-size: 24px;
+      font-weight: bold;
+      color: #41cc45; /* Slightly toned-down green */
+      transition: color 0.3s ease;
+    }
+
+    .navbar-brand:hover {
+      color: #66ff66; /* Brighter green on hover */
+    }
+
+    .navbar-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .navbar-right .nav-link {
+      color: #41cc45; /* Slightly toned-down green */
+      text-decoration: none;
+      font-size: 1rem;
+      padding: 8px 12px;
+      border-radius: 4px;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .navbar-right .nav-link:hover {
+      background-color: rgba(76, 175, 80, 0.1); /* Green with transparency */
+    }
+
+    /* Page Container */
+    .container {
+      margin-top: 80px;
+      padding: 20px;
+    }
+
+    /* Chart Container */
+    .chart-container {
+      width: 100%;
+      height: 500px;
+      background-color: #111; /* Dark chart background */
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+
+    /* Analysis Controls */
+    .analysis-controls {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      color: #e0e0e0; /* Light text */
+    }
+
+    .form-select,
+    .form-control {
+      background-color: #1a1a1a; /* Dark input background */
+      border: 1px solid #333;
+      color: #e0e0e0; /* Light text */
+      transition: border-color 0.3s ease;
+    }
+
+    .form-select:focus,
+    .form-control:focus {
+      border-color: #41cc45; /* Green border on focus */
+      box-shadow: 0 0 5px rgba(76, 175, 80, 0.5); /* Green glow */
+    }
+
+    .btn-primary {
+      background-color: #41cc45; /* Slightly toned-down green */
+      border: none;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      background-color: #66ff66; /* Brighter green on hover */
+      transform: translateY(-2px);
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+      .container {
+        margin-top: 60px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">InvestIQ</a>
+      <div class="navbar-right" id="navbar-right-content">
+        <a class="nav-link" href="login.html"><i class="bi bi-person-circle"></i> Login</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <div class="container">
+    <h2 class="mb-4 text-center">Investment Rollercoaster</h2>
+    <p class="text-center">Experience the dynamic journey of a stock – see its daily ups and downs, moving averages, and key signals that reveal market moods!</p>
+    <!-- Analysis Controls -->
+    <div class="row analysis-controls">
+      <div class="col-md-3">
+        <label for="stock-select" class="form-label">Select Stock:</label>
+        <select id="stock-select" class="form-select">
+          <!-- Options will be populated dynamically -->
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label for="start-date" class="form-label">Start Date:</label>
+        <input type="date" id="start-date" class="form-control" value="2013-01-02" />
+      </div>
+      <div class="col-md-3">
+        <label for="end-date" class="form-label">End Date:</label>
+        <input type="date" id="end-date" class="form-control" value="2013-01-09" />
+      </div>
+      <div class="col-md-3 d-flex align-items-end">
+        <button class="btn btn-primary w-100" id="analyze-btn">Show Rollercoaster</button>
+      </div>
+    </div>
+    <!-- Chart -->
+    <div class="chart-container">
+      <canvas id="rollerChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Check session status and update navbar.
+    document.addEventListener('DOMContentLoaded', function () {
+      fetch('/api/session')
+        .then(response => response.json())
+        .then(data => {
+          const navbarRight = document.getElementById('navbar-right-content');
+          if (data.loggedIn) {
+            navbarRight.innerHTML = `
+              <span class="nav-link"><i class="bi bi-person"></i> Welcome ${data.user.name}</span>
+              <button class="btn btn-outline-light btn-sm ms-2" id="logout-btn">Logout</button>
+            `;
+            document.getElementById('logout-btn').addEventListener('click', function() {
+              fetch('/api/logout', { method: 'POST' })
+                .then(() => window.location.reload());
+            });
+          }
+        })
+        .catch(err => console.error('Session check error:', err));
+
+      // Populate stock dropdown from /api/getAllStocks.
+      fetch('/api/getAllStocks')
+        .then(response => response.json())
+        .then(data => {
+          const stockSelect = document.getElementById('stock-select');
+          if (data.stocks && data.stocks.length > 0) {
+            data.stocks.forEach(stock => {
+              const option = document.createElement('option');
+              option.value = stock;
+              option.textContent = stock;
+              stockSelect.appendChild(option);
+            });
+          } else {
+            stockSelect.innerHTML = '<option value="">No stocks available</option>';
+          }
+        })
+        .catch(err => console.error('Error fetching stocks list:', err));
+    });
+
+    // Chart.js setup for the rollercoaster chart.
+    let rollerChart;
+    const rollerChartData = {
+      labels: [],
+      datasets: [
+        {
+          label: 'Close Price',
+          data: [],
+          borderColor: 'rgba(54, 162, 235, 1)',
+          backgroundColor: 'rgba(54, 162, 235, 0.2)',
+          fill: false,
+          tension: 0.2,
+        },
+        {
+          label: '5-Day SMA',
+          data: [],
+          borderColor: 'rgba(255, 206, 86, 1)',
+          backgroundColor: 'rgba(255, 206, 86, 0.2)',
+          fill: false,
+          tension: 0.2,
+        }
+      ]
+    };
+
+    function initChart() {
+      const ctx = document.getElementById('rollerChart').getContext('2d');
+      rollerChart = new Chart(ctx, {
+        type: 'line',
+        data: rollerChartData,
+        options: {
+          responsive: true,
+          scales: {
+            x: { title: { display: true, text: 'Date' } },
+            y: { title: { display: true, text: 'Price' } }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                afterBody: function(context) {
+                  const annotation = context[0].raw.annotation;
+                  return annotation ? '\n' + annotation : '';
+                }
+              }
+            }
+          },
+          animation: {
+            duration: 1500,
+            easing: 'easeOutBounce'
+          }
+        }
+      });
+    }
+    initChart();
+
+    // Function to fetch rollercoaster data and update the chart.
+    function fetchRollercoasterData() {
+      const stock = document.getElementById('stock-select').value;
+      const startDate = document.getElementById('start-date').value;
+      const endDate = document.getElementById('end-date').value;
+      const url = `/api/rollercoaster?stock=${encodeURIComponent(stock)}&start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}`;
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            alert(data.error);
+            return;
+          }
+          // Prepare arrays for chart.
+          const labels = [];
+          const closePrices = [];
+          const smaValues = [];
+          // For annotations, we include them in the data point for the Close Price.
+          const dataPoints = [];
+          data.rollercoaster.forEach(item => {
+            labels.push(item.Date);
+            closePrices.push(item.Close);
+            smaValues.push(item.SMA);
+            dataPoints.push({ x: item.Date, y: item.Close, annotation: item.Annotation });
+          });
+          rollerChartData.labels = labels;
+          rollerChartData.datasets[0].data = dataPoints;
+          rollerChartData.datasets[1].data = smaValues;
+          rollerChart.update();
+        })
+        .catch(err => {
+          console.error('Error fetching rollercoaster data:', err);
+          alert('Failed to fetch rollercoaster data.');
+        });
+    }
+
+    document.getElementById('analyze-btn').addEventListener('click', fetchRollercoasterData);
+  </script>
+</body>
+</html>

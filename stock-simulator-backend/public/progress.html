@@ -12,53 +12,126 @@
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
   <!-- Custom CSS -->
   <style>
+    /* Base Styles */
     body {
       font-family: 'Montserrat', sans-serif;
       margin: 0;
       padding: 0;
-      background-color: #f5f7fa;
+      background-color: #0a0a0a; /* Dark background */
+      color: #e0e0e0; /* Light text */
     }
 
-    /* Top Navbar */
+    /* Navbar */
     .navbar {
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      background-color: #28a745 !important;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background-color: #111; /* Dark navbar */
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
     }
 
-    /* Sidebar styling */
+    .navbar-brand {
+      font-size: 24px;
+      font-weight: bold;
+      color: #41cc45; /* Slightly toned-down green */
+      transition: color 0.3s ease;
+    }
+
+    .navbar-brand:hover {
+      color: #66ff66; /* Brighter green on hover */
+    }
+
+    .navbar-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .navbar-right .nav-link {
+      color: #41cc45; /* Slightly toned-down green */
+      text-decoration: none;
+      font-size: 1rem;
+      padding: 8px 12px;
+      border-radius: 4px;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .navbar-right .nav-link:hover {
+      background-color: rgba(76, 175, 80, 0.1); /* Green with transparency */
+    }
+
+    /* Sidebar */
     .sidebar {
       position: fixed;
-      top: 56px; /* Height of the navbar */
+      top: 60px;
       left: 0;
       bottom: 0;
       width: 80px;
-      background-color: #ffffff;
-      border-right: 1px solid #ddd;
+      background-color: #111; /* Dark sidebar */
+      border-right: 1px solid #333;
       padding-top: 20px;
       z-index: 1050;
+      transition: width 0.3s ease;
+      overflow: hidden;
+    }
+
+    .sidebar:hover {
+      width: 220px; /* Slightly wider on hover */
+    }
+
+    .sidebar ul {
+      padding: 0;
+      margin: 0;
+      list-style: none;
     }
 
     .sidebar .nav-link {
-      color: #555;
+      color: #e0e0e0; /* Light text */
       padding: 15px;
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .sidebar .nav-link i {
+      min-width: 30px;
+      font-size: 1.5rem;
       text-align: center;
+      color: #41cc45; /* Slightly toned-down green */
+    }
+
+    .sidebar .nav-link span {
+      opacity: 0;
+      margin-left: 10px;
+      transition: opacity 0.3s ease;
+    }
+
+    .sidebar:hover .nav-link span {
+      opacity: 1;
     }
 
     .sidebar .nav-link:hover {
-      background-color: #f0f0f0;
-      color: #000;
-      transition: background-color 0.3s, color 0.3s;
+      background-color: rgba(76, 175, 80, 0.1); /* Green with transparency */
+      color: #41cc45; /* Slightly toned-down green */
     }
 
     /* Main Content */
     .main-content {
       margin-left: 80px;
-      padding-top: 56px;
-      transition: margin-left 0.3s;
+      padding-top: 80px; /* Adjusted for navbar height */
+      transition: margin-left 0.3s ease;
     }
 
-    .sidebar:hover + .main-content {
-      margin-left: 180px;
+    .sidebar:hover ~ .main-content {
+      margin-left: 220px; /* Adjusted for wider sidebar */
     }
 
     /* Progress Tree */
@@ -67,6 +140,13 @@
       flex-direction: column;
       align-items: center;
       padding: 40px 20px;
+    }
+
+    .progress-tree h2 {
+      color: #41cc45; /* Slightly toned-down green */
+      margin-bottom: 40px;
+      font-size: 2rem;
+      font-weight: bold;
     }
 
     .level {
@@ -81,21 +161,21 @@
       position: absolute;
       width: 80%;
       height: 3px;
-      background: linear-gradient(90deg, #28a745, #218838);
+      background: linear-gradient(90deg, #41cc45, #218838); /* Green gradient */
       top: 50%;
       left: 10%;
       z-index: -1;
     }
 
     .node {
-      background: linear-gradient(135deg, #007bff, #0056b3);
+      background: linear-gradient(135deg, #41cc45, #218838); /* Green gradient */
       color: white;
       padding: 20px;
       border-radius: 50%;
       margin: 0 15px;
       cursor: pointer;
       transition: all 0.3s ease-in-out;
-      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 6px 15px rgba(76, 175, 80, 0.3); /* Green shadow */
       text-align: center;
       width: 80px;
       height: 80px;
@@ -108,23 +188,23 @@
     }
 
     .node.completed {
-      background: linear-gradient(135deg, #28a745, #218838);
+      background: linear-gradient(135deg, #28a745, #218838); /* Darker green */
     }
 
     .node.current {
-      background: linear-gradient(135deg, #ffc107, #ff9800);
+      background: linear-gradient(135deg, #ffc107, #ff9800); /* Yellow gradient */
       animation: pulse 1.5s infinite, float 3s ease-in-out infinite;
     }
 
     .node.locked {
-      background: linear-gradient(135deg, #6c757d, #495057);
+      background: linear-gradient(135deg, #6c757d, #495057); /* Gray gradient */
       cursor: not-allowed;
     }
 
     .node:hover:not(.locked) {
-      background: linear-gradient(135deg, #0056b3, #003f7f);
+      background: linear-gradient(135deg, #218838, #1e7e34); /* Darker green */
       transform: scale(1.15);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 10px 20px rgba(76, 175, 80, 0.4); /* Brighter green shadow */
     }
 
     .node::after {
@@ -136,7 +216,7 @@
       margin-top: 12px;
       font-size: 0.95rem;
       font-weight: bold;
-      color: #444;
+      color: #41cc45; /* Slightly toned-down green */
       white-space: nowrap;
     }
 
@@ -157,7 +237,7 @@
       margin-top: 30px;
       font-size: 1.3rem;
       font-weight: bold;
-      color: #444;
+      color: #41cc45; /* Slightly toned-down green */
       animation: fadeIn 2s ease-in-out;
     }
 
@@ -172,38 +252,38 @@
   <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
     <div class="container-fluid">
       <a class="navbar-brand" href="#">InvestIQ</a>
-      <div class="d-flex">
-        <a class="nav-link text-white" href="#"><i class="bi bi-person-circle"></i> Login</a>
+      <div class="navbar-right">
+        <a class="nav-link" href="#"><i class="bi bi-person-circle"></i> Login</a>
       </div>
     </div>
   </nav>
 
-  <!-- Sidebar -->
-  <div class="sidebar bg-light">
+<!-- Sidebar -->
+<div class="sidebar bg-dark">
     <ul class="nav flex-column">
       <li class="nav-item">
-        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Dashboard">
-          <i class="bi bi-speedometer2"></i>
+        <a class="nav-link" href="analysis.html" title="Analysis">
+          <i class="bi bi-graph-up-arrow"></i><span> Analytics</span>
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Portfolio">
-          <i class="bi bi-bar-chart-line"></i>
+        <a class="nav-link" href="simulator.html" title="Simulator">
+          <i class="bi bi-bar-chart-line"></i><span> Simulator</span>
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Transactions">
-          <i class="bi bi-currency-exchange"></i>
+        <a class="nav-link" href="progress.html" title="Learning Hub">
+          <i class="bi bi-mortarboard"></i><span> Learning Hub</span>
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Analytics">
-          <i class="bi bi-graph-up"></i>
+        <a class="nav-link" href="market.html" title="Market Mood">
+          <i class="bi bi-emoji-neutral"></i><span> Market Mood</span>
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Settings">
-          <i class="bi bi-gear"></i>
+        <a class="nav-link" href="candle.html" title="Candle Chart">
+          <i class="bi bi-bar-chart"></i><span> Candle Chart</span>
         </a>
       </li>
     </ul>
